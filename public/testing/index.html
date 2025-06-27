@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Nest E-Commerce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#FF9900',
+                        darkBg: '#181818',
+                        darkCard: '#232323',
+                        lightBg: '#FFFFFF',
+                        lightCard: '#F5F5F5',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .scroll-hidden {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .cart-item {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .dark .product-card:hover {
+            box-shadow: 0 10px 25px -5px rgba(255, 255, 255, 0.05), 0 10px 10px -5px rgba(255, 255, 255, 0.02);
+        }
+        
+        /* Hamburger menu animation */
+        .hamburger-line {
+            transition: all 0.3s ease;
+        }
+        
+        .menu-open .line1 {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .menu-open .line2 {
+            opacity: 0;
+        }
+        
+        .menu-open .line3 {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+        
+        /* Mobile menu animation */
+        .mobile-menu {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
+        }
+        
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+        
+        /* Star rating */
+        .star-rating {
+            display: inline-flex;
+            font-size: 1.25rem;
+        }
+        
+        .star-rating .star {
+            cursor: pointer;
+            color: #D1D5DB;
+            transition: color 0.2s ease;
+        }
+        
+        .star-rating .star.active {
+            color: #FFC107;
+        }
+        
+        .star-rating .star:hover ~ .star,
+        .star-rating:hover .star {
+            color: #D1D5DB;
+        }
+        
+        .star-rating:hover .star:hover,
+        .star-rating:hover .star:hover ~ .star {
+            color: #FFC107;
+        }
+        
+        /* Modal styles */
+        .modal {
+            transition: opacity 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-lightBg dark:bg-darkBg transition-colors duration-300">
+
+    <!-- Auth Modals -->
+    <div id="signInModal" class="modal fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal-content bg-white dark:bg-darkCard w-full max-w-md rounded-lg shadow-xl p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Sign In</h3>
+                <button class="close-modal text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="signInForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="signInEmail">Email</label>
+                    <input type="email" id="signInEmail" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="signInPassword">Password</label>
+                    <input type="password" id="signInPassword" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base" required>
+                </div>
+                <button type="submit" class="w-full py-2 px-4 bg-secondary hover:bg-yellow-600 text-white font-bold rounded-lg transition-colors">Sign In</button>
+            </form>
+            <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                Don't have an account? <button id="showSignUpBtn" class="text-primary hover:underline">Sign Up</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="signUpModal" class="modal fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal-content bg-white dark:bg-darkCard w-full max-w-md rounded-lg shadow-xl p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Create Account</h3>
+                <button class="close-modal text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="signUpForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="signUpName">Full Name</label>
+                    <input type="text" id="signUpName" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="signUpEmail">Email</label>
+                    <input type="email" id="signUpEmail" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="signUpPassword">Password</label>
+                    <input type="password" id="signUpPassword" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="signUpConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signUpConfirmPassword" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base" required>
+                </div>
+                <button type="submit" class="w-full py-2 px-4 bg-secondary hover:bg-yellow-600 text-white font-bold rounded-lg transition-colors">Create Account</button>
+            </form>
+            <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                Already have an account? <button id="showSignInBtn" class="text-primary hover:underline">Sign In</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comments Modal -->
+    <div id="commentsModal" class="modal fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal-content bg-white dark:bg-darkCard w-full max-w-md rounded-lg shadow-xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Product Comments</h3>
+                <button class="close-modal text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="commentsList" class="mb-4 max-h-60 overflow-y-auto">
+                <!-- Comments will be inserted here -->
+            </div>
+            <form id="commentForm">
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="commentText">Add a comment</label>
+                    <textarea id="commentText" rows="3" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base" required></textarea>
+                </div>
+                <button type="submit" class="w-full py-2 px-4 bg-secondary hover:bg-yellow-600 text-white font-bold rounded-lg transition-colors">Post Comment</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Checkout Modal -->
+    <div id="checkoutModal" class="modal fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal-content bg-white dark:bg-darkCard w-full max-w-md rounded-lg shadow-xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Checkout</h3>
+                <button class="close-modal text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <h4 class="font-medium text-gray-800 dark:text-gray-200 mb-2">Order Summary</h4>
+                <div id="checkoutItems" class="mb-3">
+                    <!-- Checkout items will be inserted here -->
+                </div>
+                <div class="flex justify-between py-2 border-t border-b border-gray-200 dark:border-gray-700">
+                    <span class="font-bold text-gray-800 dark:text-white">Total:</span>
+                    <span id="checkoutTotal" class="font-bold text-gray-900 dark:text-white">$0.00</span>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h4 class="font-medium text-gray-800 dark:text-gray-200 mb-2">Payment Method</h4>
+                <div class="space-y-2">
+                    <label class="flex items-center cursor-pointer p-3 border border-gray-300 dark:border-gray-600 rounded-lg">
+                        <input type="radio" name="paymentMethod" value="mtn" class="mr-2" checked>
+                        <span class="text-gray-800 dark:text-white">MTN Mobile Money</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer p-3 border border-gray-300 dark:border-gray-600 rounded-lg">
+                        <input type="radio" name="paymentMethod" value="card" class="mr-2">
+                        <span class="text-gray-800 dark:text-white">Credit/Debit Card</span>
+                    </label>
+                </div>
+            </div>
+            <div id="mtnPaymentDetails" class="mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                <p class="text-gray-700 dark:text-gray-300 mb-2">Send payment to MTN number:</p>
+                <p class="font-bold text-gray-900 dark:text-white mb-2">679871130 (Cameroon)</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">After sending payment, please enter the transaction ID below.</p>
+                <input type="text" placeholder="MTN Transaction ID" class="mt-2 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base">
+            </div>
+            <div id="cardPaymentDetails" class="mb-4 hidden">
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Card Number</label>
+                    <input type="text" placeholder="1234 5678 9012 3456" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base">
+                </div>
+                <div class="flex space-x-4 mb-3">
+                    <div class="w-1/2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expiry Date</label>
+                        <input type="text" placeholder="MM/YY" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CVV</label>
+                        <input type="text" placeholder="123" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-base">
+                    </div>
+                </div>
+            </div>
+            <button id="completePaymentBtn" class="w-full py-3 bg-secondary hover:bg-yellow-600 text-white font-bold rounded-lg transition-colors">
+                Complete Payment
+            </button>
+        </div>
+    </div>
+    
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-white dark:bg-darkBg shadow-md transition-colors duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <span class="text-2xl font-bold text-primary">Market Nest</span>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="#home" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors">Home</a>
+                <a href="#affiliate" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors">E-Courses</a>
+                <a href="#foodstuff" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors">Foodstuff</a>
+                <a href="#electronics" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors">Electronics</a>
+                <a href="#fashion" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors">Fashion</a>
+                <a href="#health" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors">Health & Beauty</a>
+                <a href="#investors" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors">For Investors</a>
+            </nav>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Auth Buttons -->
+                <div class="hidden md:block">
+                    <button id="signInBtn" class="px-4 py-2 text-primary hover:text-secondary transition-colors">Sign In</button>
+                    <button id="signUpBtn" class="px-4 py-2 bg-primary hover:bg-secondary text-white rounded-lg transition-colors">Sign Up</button>
+                </div>
+                
+                <!-- Dark Mode Toggle -->
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+                    <i class="fas fa-moon text-blue-300 hidden dark:block"></i>
+                </button>
+                
+                <!-- Cart Icon -->
+                <button id="cartBtn" class="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-shopping-cart text-gray-700 dark:text-gray-200"></i>
+                    <span id="cartCount" class="absolute -top-1 -right-1 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </button>
+                
+                <!-- Hamburger Menu Button -->
+                <button id="hamburgerBtn" class="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <div class="w-6 flex flex-col space-y-1">
+                        <span class="hamburger-line w-full h-0.5 bg-gray-700 dark:bg-gray-200 line1"></span>
+                        <span class="hamburger-line w-full h-0.5 bg-gray-700 dark:bg-gray-200 line2"></span>
+                        <span class="hamburger-line w-full h-0.5 bg-gray-700 dark:bg-gray-200 line3"></span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu fixed top-0 left-0 h-full w-64 bg-white dark:bg-darkBg shadow-lg z-40 p-5">
+        <div class="flex justify-between items-center mb-6">
+            <span class="text-xl font-bold text-primary">Menu</span>
+            <button id="closeMenuBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <i class="fas fa-times text-gray-700 dark:text-gray-200"></i>
+            </button>
+        </div>
+        <nav class="flex flex-col space-y-4">
+            <a href="#home" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors py-2">Home</a>
+            <a href="#affiliate" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors py-2">E-Courses</a>
+            <a href="#foodstuff" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors py-2">Foodstuff</a>
+            <a href="#electronics" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors py-2">Electronics</a>
+            <a href="#fashion" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors py-2">Fashion</a>
+            <a href="#health" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors py-2">Health & Beauty</a>
+            <a href="#investors" class="text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-secondary transition-colors py-2">For Investors</a>
+        </nav>
+        <div class="mt-6 flex flex-col space-y-2">
+            <button id="mobileSignInBtn" class="w-full py-2 text-center text-primary hover:text-secondary transition-colors">Sign In</button>
+            <button id="mobileSignUpBtn" class="w-full py-2 text-center bg-primary hover:bg-secondary text-white rounded-lg transition-colors">Sign Up</button>
+        </div>
+    </div>
+    
+    <!-- Shopping Cart -->
+    <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-darkBg shadow-lg transform transition-transform duration-300 ease-in-out">
+            <div class="p-5 h-full flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white">Your Cart</h2>
+                    <button id="closeCartBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-times text-gray-700 dark:text-gray-200"></i>
+                    </button>
+                </div>
+                
+                <div id="cartItems" class="flex-grow overflow-auto">
+                    <!-- Cart items will be inserted here by JavaScript -->
+                </div>
+                
+                <div class="mt-5 pt-5 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-between mb-4">
+                        <span class="text-gray-700 dark:text-gray-300">Subtotal:</span>
+                        <span id="cartSubtotal" class="font-bold text-gray-900 dark:text-white">$0.00</span>
+                    </div>
+                    <button id="checkoutBtn" class="w-full py-3 bg-secondary hover:bg-yellow-600 text-white font-bold rounded-lg transition-colors">
+                        Proceed to Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Home Section -->
+    <section id="home" class="pt-10 pb-16 bg-gradient-to-b from-white to-gray-100 dark:from-darkBg dark:to-gray-800 transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12 scroll-hidden">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">Welcome to <span class="text-primary">Market Nest</span></h1>
+                    <p class="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-3xl mx-auto">Your one-stop marketplace for quality products at competitive prices</p>
+                    <button class="px-8 py-3 bg-secondary hover:bg-yellow-600 text-white font-bold rounded-lg transition-colors shadow-md">
+                        Start Shopping
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                    <div class="bg-white dark:bg-darkCard p-6 rounded-lg shadow-md text-center scroll-hidden">
+                        <div class="text-secondary text-3xl mb-4">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Fast Shipping</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Get your products delivered quickly anywhere in the country</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-darkCard p-6 rounded-lg shadow-md text-center scroll-hidden">
+                        <div class="text-secondary text-3xl mb-4">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Secure Payments</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Safe and secure payment options including mobile money</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-darkCard p-6 rounded-lg shadow-md text-center scroll-hidden">
+                        <div class="text-secondary text-3xl mb-4">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Quality Products</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Carefully curated selection of high-quality products</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-darkCard p-8 rounded-lg shadow-lg scroll-hidden">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Why Choose Market Nest?</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex items-start">
+                            <div class="text-secondary text-xl mr-4">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800 dark:text-white mb-1">Wide Product Selection</h3>
+                                <p class="text-gray-600 dark:text-gray-400">From electronics to foodstuff, fashion to health products - we have it all!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="text-secondary text-xl mr-4">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800 dark:text-white mb-1">Competitive Pricing</h3>
+                                <p class="text-gray-600 dark:text-gray-400">Get the best value for your money with our competitive prices</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="text-secondary text-xl mr-4">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800 dark:text-white mb-1">Verified Sellers</h3>
+                                <p class="text-gray-600 dark:text-gray-400">All our merchants are verified to ensure safety and reliability</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="text-secondary text-xl mr-4">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800 dark:text-white mb-1">Exceptional Customer Service</h3>
+                                <p class="text-gray-600 dark:text-gray-400">Our dedicated support team is always ready to assist you</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Affiliate Products Section -->
+    <section id="affiliate" class="py-12">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 scroll-hidden">E-Courses</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="affiliateProducts">
+                <!-- Product cards will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </section>
+   
+    <!-- Foodstuff Section -->
+    <section id="foodstuff" class="py-12 bg-gray-100 dark:bg-gray-800 transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 scroll-hidden">Foodstuff</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="foodstuffProducts">
+                <!-- Product cards will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- Electronics Section -->
+    <section id="electronics" class="py-12">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 scroll-hidden">Electronics</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="electronicsProducts">
+                <!-- Product cards will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- Fashion Section -->
+    <section id="fashion" class="py-12 bg-gray-100 dark:bg-gray-800 transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 scroll-hidden">Fashion</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="fashionProducts">
+                <!-- Product cards will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- Health & Beauty Section -->
+    <section id="health" class="py-12">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 scroll-hidden">Health & Beauty</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="healthProducts">
+                <!-- Product cards will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- Investors Section -->
+    <section id="investors" class="py-16 bg-gray-100 dark:bg-gray-800 transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center scroll-hidden">For Investors</h2>
+                
+                <div class="bg-white dark:bg-darkCard rounded-lg shadow-lg p-8 mb-10 scroll-hidden">
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Investment Opportunities</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-6">Join us in our mission to revolutionize the e-commerce landscape in Africa. Market Nest offers attractive investment opportunities with competitive returns.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                            <h4 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Seed Funding</h4>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">Invest in our early growth phase with minimum investment of $5,000</p>
+                            <ul class="text-gray-700 dark:text-gray-300 space-y-2 mb-4">
+                                <li class="flex items-start">
+                                    <span class="text-green-500 mr-2">✓</span>
+                                    <span>Projected ROI: 25-30% within 2 years</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-500 mr-2">✓</span>
+                                    <span>Equity shares in the company</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-500 mr-2">✓</span>
+                                    <span>Priority access to future funding rounds</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                            <h4 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Growth Capital</h4>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">Support our expansion with investments starting from $20,000</p>
+                            <ul class="text-gray-700 dark:text-gray-300 space-y-2 mb-4">
+                                <li class="flex items-start">
+                                    <span class="text-green-500 mr-2">✓</span>
+                                    <span>Projected ROI: 20-25% within 3 years</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-500 mr-2">✓</span>
+                                    <span>Board representation options</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="text-green-500 mr-2">✓</span>
+                                    <span>Strategic partnership opportunities</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 p-5 rounded-lg">
+                        <h4 class="font-semibold text-gray-800 dark:text-white mb-2">Market Growth Metrics</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-2xl font-bold text-primary">35%</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Annual Growth</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-primary">$2.5M</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Annual Revenue</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-primary">120K+</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Active Users</p>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-primary">15+</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Markets</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button class="px-8 py-3 bg-primary hover:bg-secondary text-white font-bold rounded-lg shadow-md transition-colors">
+                        Request Investor Information
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Scroll to Top Button -->
+    <button id="scrollTopBtn" class="fixed bottom-6 right-6 p-3 bg-secondary hover:bg-yellow-600 text-white rounded-full shadow-lg opacity-0 invisible transition-all duration-300">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <span class="text-2xl font-bold text-primary">Market Nest</span>
+                    <p class="mt-2 text-gray-400">Your trusted e-commerce partner</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+            <hr class="border-gray-700 my-6">
+            <p class="text-center text-gray-400">© 2023 Market Nest. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Initialize products data
+        const products = {
+            affiliate: [
+                {id: 'a1', name: 'The Beginner\'s Video Editing Blueprint', description: 'Edit videos easily with beginner-friendly tools.', price: 2.5, image: 'images/WhatsApp Image 2025-04-06 at 07.12.26_16de06d4.jpg', rating: 4.5, numRatings: 128, comments: [{user: 'John D.', text: 'Great sound quality!', rating: 5}, {user: 'Sarah M.', text: 'Battery life is amazing', rating: 4}], link: 'https://aff.stakecut.com/11028/162902'},
+                {id: 'a2', name: 'THE NEWBIE AFFILIATE GUIDE', description: 'Simple steps to kickstart affiliate marketing success.', price: 5.85, image: 'images/ChatGPT Image Apr 6, 2025, 07_27_40 AM.png', rating: 4.2, numRatings: 95, comments: [{user: 'Mike L.', text: 'Accurate step counting', rating: 4}, {user: 'Lisa R.', text: 'Love the sleep tracking feature', rating: 5}], link: 'https://aff.stakecut.com/65572/162902'},
+                {id: 'a3', name: 'AFFILIATE MARKETING FOR BEGINNERS (AMB)', description: 'Your step-by-step path to online income', price: 8.35, image: 'images/07ccecda-b503-43ee-86a3-e9a5a375003a.png', rating: 4.7, numRatings: 203, comments: [{user: 'Robert J.', text: 'Worth every penny', rating: 5}, {user: 'Emma S.', text: 'Beautiful design', rating: 5}], link: 'https://aff.stakecut.com/374946/162902'},
+                {id: 'a4', name: 'How To Relocate To Indonesia, Malaysia & the Middle East As a Teacher For Free', description: 'Teach abroad free--relocate easily, no cost.', price: 15, image: 'images/e55d8aa2-1a47-4ba3-91f7-b01e8d131471.png', rating: 4.0, numRatings: 67, comments: [{user: 'David K.', text: 'Sturdy construction', rating: 4}, {user: 'Amy P.', text: 'Helped with my back pain', rating: 4}], link: 'https://aff.stakecut.com/383662/162902'},
+                {id: 'a5', name: 'DEIS - Daily E-commerce Income System', description: 'Daily e-commerce income, no experience!', price: 6.7, image: 'images/WhatsApp Image 2025-04-06 at 10.12.08_d3d42c9d.jpg', rating: 4.3, numRatings: 112, comments: [{user: 'Thomas B.', text: 'Works great with my iPhone', rating: 4}, {user: 'Kelly M.', text: 'Charges quickly', rating: 5}], link: 'https://aff.stakecut.com/428212/162902'},
+                {id: 'a6', name: 'VIDEO CONTENT WORKSHOP', description: 'Create, edit, grow your audience.', price: 2.05, image: 'images/WhatsApp Image 2025-04-06 at 10.03.18_6bcb5243.jpg', rating: 4.6, numRatings: 156, comments: [{user: 'James T.', text: 'Amazing bass for its size', rating: 5}, {user: 'Olivia W.', text: 'Perfect for outdoor parties', rating: 4}], link: 'https://aff.stakecut.com/432822/162902'},
+                {id: 'a7', name: 'PROFITABLE FREELANCING ACADEMY', description: 'Start freelancing, attract clients, earn steady income.', price: 33, image: 'images/WhatsApp Image 2025-04-06 at 10.23.36_3be81898.jpg', rating: 4.8, numRatings: 89, comments: [{user: 'Nathan F.', text: 'Easy to control', rating: 5}, {user: 'Sophie L.', text: 'Great camera quality', rating: 5}], link: 'https://aff.stakecut.com/316458/162902'},
+                {id: 'a8', name: 'PocketMonie', description: 'Land UK, US & Australian Online Jobs start today', price: 25, image: 'images/WhatsApp Image 2025-04-06 at 10.54.02_9e4b18fa.jpg', rating: 4.4, numRatings: 214, comments: [{user: 'Chris H.', text: 'Great for FPS games', rating: 5}, {user: 'Megan D.', text: 'Comfortable during long sessions', rating: 4}], link: 'https://aff.stakecut.com/694428/162902'},
+                {id: 'a9', name: 'Passive Income Blueprint with Amazon kindle direct publishing', description: 'Publish eBooks, earn royalties, build passive income.', price: 16.7, image: 'images/WhatsApp Image 2025-04-06 at 10.47.30_2c7c90cb.jpg', rating: 4.5, numRatings: 178, comments: [{user: 'Paul G.', text: 'Love the clicky sound', rating: 5}, {user: 'Rebecca A.', text: 'Great build quality', rating: 4}], link: 'https://aff.stakecut.com/523018/162902'},
+                {id: 'a10', name: 'Affiliate Beginners Course (ABC)', description: 'Learn. Promote. Earn.', price: 12.5, image: 'images/WhatsApp Image 2025-04-06 at 11.09.45_60f8c4ad.jpg', rating: 4.7, numRatings: 134, comments: [{user: 'Daniel V.', text: 'Super fast file transfers', rating: 5}, {user: 'Jessica T.', text: 'Compact and reliable', rating: 5}], link: 'https://aff.stakecut.com/591904/162902'},
+                {id: 'a11', name: 'PayPal Mastery 101', description: 'Master PayPal: Setup, Security, Global.', price: 15, image: 'images/WhatsApp Image 2025-04-06 at 11.23.40_e6ac971f.jpg', rating: 4.3, numRatings: 76, comments: [{user: 'Mark B.', text: 'Saved on my energy bill', rating: 4}, {user: 'Laura S.', text: 'Easy to install', rating: 5}], link: 'https://example.com/course11'},
+                {id: 'a12', name: 'Stellar Publishing GUIDE', description: 'Publish books, build readers, earn more.', price: 20.85, image: 'images/WhatsApp Image 2025-04-07 at 14.04.20_114e0e4f.jpg', rating: 4.4, numRatings: 92, comments: [{user: 'Alex R.', text: 'Clear night vision', rating: 4}, {user: 'Emily W.', text: 'Great app interface', rating: 5}], link: 'https://example.com/course12'},
+                {id: 'a13', name: 'Bank secrets Forex Course', description: 'Trade forex smartly, manage risks, gain profits.', price: 41, image: 'images/WhatsApp Image 2025-04-07 at 14.12.39_6c43e550.jpg', rating: 4.6, numRatings: 187, comments: [{user: 'William C.', text: 'Battery lasts for weeks', rating: 5}, {user: 'Hannah J.', text: 'Perfect for travel', rating: 5}], link: 'https://example.com/course13'},
+                {id: 'a14', name: 'Crypto Profit Kit', description: 'Understand crypto basics, invest safely, earn profits.', price: 165, image: 'images/WhatsApp Image 2025-04-07 at 14.18.02_cb4387a5.jpg', rating: 4.5, numRatings: 103, comments: [{user: 'Brian K.', text: 'Helped with my allergies', rating: 5}, {user: 'Nicole D.', text: 'Quiet operation', rating: 4}], link: 'https://aff.stakecut.com/740613/12179733'},
+                {id: 'a15', name: 'The Airbnb Arbitrage Dollar Masterclass', description: 'Make money renting without owning any property.', price: 20.9, image: 'images/WhatsApp Image 2025-04-07 at 14.22.39_8c569da3.jpg', rating: 4.7, numRatings: 156, comments: [{user: 'Kevin L.', text: 'Best purchase I\'ve made', rating: 5}, {user: 'Rachel B.', text: 'Great at picking up pet hair', rating: 5}], link: 'https://aff.stakecut.com/558998/12179733'},
+                {id: 'a16', name: 'Stock Exchange Masterclass', description: 'Learn stock trading, investing basics, build wealth.', price: 11, image: 'images/WhatsApp Image 2025-04-07 at 14.32.15_c43dba1a.jpg', rating: 4.3, numRatings: 221, comments: [{user: 'Steven M.', text: 'Great sound for the price', rating: 4}, {user: 'Karen P.', text: 'Comfortable fit', rating: 5}], link: 'https://aff.stakecut.com/834775/12179733'},
+                {id: 'a17', name: 'Whatsapp Influencer Marketing Blueprint', description: 'Monetize WhatsApp. Sell. Influence.', price: 1.4, image: 'images/WhatsApp Image 2025-04-07 at 15.03.26_2df917e7.jpg', rating: 4.2, numRatings: 88, comments: [{user: 'Edward J.', text: 'Professional-looking videos', rating: 4}, {user: 'Michelle G.', text: 'Easy to use', rating: 5}], link: 'https://aff.stakecut.com/911365/12179733'},
+                {id: 'a18', name: 'TikTok Ad Mastery', description: 'Create viral TikTok ads, boost brand sales.', price: 5, image: 'images/WhatsApp Image 2025-04-07 at 15.11.41_716607d3.jpg', rating: 4.8, numRatings: 79, comments: [{user: 'Andrew T.', text: 'Mind-blowing experience', rating: 5}, {user: 'Samantha K.', text: 'High quality graphics', rating: 5}], link: 'https://aff.stakecut.com/374783/12179733'},
+                {id: 'a19', name: 'The Content Creator Cash System', description: 'Monetize your content. Grow your reach.', price: 5, image: 'images/WhatsApp Image 2025-04-07 at 16.33.47_effab261.jpg', rating: 4.1, numRatings: 132, comments: [{user: 'George N.', text: 'Long battery life', rating: 4}, {user: 'Tiffany H.', text: 'Compact design', rating: 4}], link: 'https://aff.stakecut.com/436740/12179733'},
+                {id: 'a20', name: 'Ghostwriting Income Generator course', description: 'Write for others, earn consistently, build reputation.', price: 25, image: 'images/WhatsApp Image 2025-04-07 at 17.38.16_ea0dcf6b.jpg', rating: 4.4, numRatings: 145, comments: [{user: 'Richard P.', text: 'Works great with Alexa', rating: 5}, {user: 'Julia S.', text: 'Easy to set up', rating: 4}], link: 'https://aff.stakecut.com/432955/12179733'}
+            ],
+            foodstuff: [
+                {id: 'f1', name: 'Organic Coffee', description: 'Fair trade arabica beans', price: 14.99, image: 'https://picsum.photos/id/225/300/300', rating: 4.7, numRatings: 108, comments: [{user: 'Alan R.', text: 'Best coffee I\'ve tried', rating: 5}, {user: 'Christine L.', text: 'Rich flavor', rating: 5}]},
+                {id: 'f2', name: 'Artisan Pasta', description: 'Hand-crafted in Italy', price: 8.99, image: 'https://picsum.photos/id/292/300/300', rating: 4.5, numRatings: 87, comments: [{user: 'Brandon S.', text: 'Authentic taste', rating: 5}, {user: 'Diana P.', text: 'Great texture', rating: 4}]},
+                {id: 'f3', name: 'Extra Virgin Olive Oil', description: 'Cold-pressed Mediterranean', price: 19.99, image: 'https://picsum.photos/id/312/300/300', rating: 4.8, numRatings: 124, comments: [{user: 'Evan W.', text: 'Pure and delicious', rating: 5}, {user: 'Fiona M.', text: 'Use it for everything', rating: 5}]},
+                {id: 'f4', name: 'Specialty Tea Set', description: 'Assorted premium blends', price: 24.99, image: 'https://picsum.photos/id/325/300/300', rating: 4.6, numRatings: 96, comments: [{user: 'Greg T.', text: 'Great variety', rating: 5}, {user: 'Heather B.', text: 'Wonderful gift', rating: 4}]},
+                {id: 'f5', name: 'Organic Honey', description: 'Raw and unfiltered', price: 12.99, image: 'https://picsum.photos/id/341/300/300', rating: 4.9, numRatings: 152, comments: [{user: 'Ian C.', text: 'So good on toast', rating: 5}, {user: 'Jennifer A.', text: 'Pure and natural', rating: 5}]},
+                {id: 'f6', name: 'Artisan Cheese Box', description: 'Curated selection of cheeses', price: 39.99, image: 'https://picsum.photos/id/352/300/300', rating: 4.7, numRatings: 73, comments: [{user: 'Kyle R.', text: 'Perfect for parties', rating: 5}, {user: 'Linda M.', text: 'Great selection', rating: 5}]},
+                {id: 'f7', name: 'Gourmet Chocolate', description: '72% dark chocolate bars', price: 9.99, image: 'https://picsum.photos/id/369/300/300', rating: 4.5, numRatings: 111, comments: [{user: 'Matthew P.', text: 'Rich flavor', rating: 4}, {user: 'Nancy K.', text: 'Not too bitter', rating: 5}]},
+                {id: 'f8', name: 'Superfood Trail Mix', description: 'Nuts, seeds and berries', price: 6.99, image: 'https://picsum.photos/id/376/300/300', rating: 4.3, numRatings: 89, comments: [{user: 'Oscar J.', text: 'Great healthy snack', rating: 4}, {user: 'Patricia L.', text: 'Kids love it', rating: 5}]},
+                {id: 'f9', name: 'Balsamic Vinegar', description: 'Aged in oak barrels', price: 17.99, image: 'https://picsum.photos/id/382/300/300', rating: 4.6, numRatings: 67, comments: [{user: 'Quincy B.', text: 'Perfect acidity', rating: 5}, {user: 'Rita T.', text: 'Great for dressing', rating: 4}]},
+                {id: 'f10', name: 'Premium Beef Jerky', description: 'Grass-fed beef cuts', price: 8.99, image: 'https://picsum.photos/id/390/300/300', rating: 4.4, numRatings: 103, comments: [{user: 'Steve H.', text: 'Great protein snack', rating: 4}, {user: 'Tina R.', text: 'Flavorful', rating: 5}]},
+                {id: 'f11', name: 'Organic Granola', description: 'Low sugar breakfast option', price: 7.99, image: 'https://picsum.photos/id/399/300/300', rating: 4.2, numRatings: 78, comments: [{user: 'Ursula M.', text: 'Not too sweet', rating: 4}, {user: 'Victor C.', text: 'Great with yogurt', rating: 4}]},
+                {id: 'f12', name: 'Dried Fruit Mix', description: 'No added sugars or preservatives', price: 5.99, image: 'https://picsum.photos/id/401/300/300', rating: 4.1, numRatings: 92, comments: [{user: 'Walter D.', text: 'Fresh taste', rating: 4}, {user: 'Yvonne F.', text: 'Good variety', rating: 4}]},
+                {id: 'f13', name: 'Spice Collection', description: 'Global flavors in one box', price: 29.99, image: 'https://picsum.photos/id/427/300/300', rating: 4.8, numRatings: 56, comments: [{user: 'Zachary N.', text: 'Great selection', rating: 5}, {user: 'Abigail P.', text: 'Fresh spices', rating: 5}]},
+                {id: 'f14', name: 'Specialty Sea Salt', description: 'Hand-harvested flakes', price: 8.99, image: 'https://picsum.photos/id/452/300/300', rating: 4.5, numRatings: 48, comments: [{user: 'Benjamin L.', text: 'Enhances flavor', rating: 5}, {user: 'Chloe V.', text: 'Great quality', rating: 4}]},
+                {id: 'f15', name: 'Gourmet Popcorn', description: 'Truffle and sea salt flavor', price: 6.99, image: 'https://picsum.photos/id/478/300/300', rating: 4.3, numRatings: 86, comments: [{user: 'Dominic W.', text: 'Delicious movie snack', rating: 4}, {user: 'Eleanor J.', text: 'Unique flavor', rating: 5}]},
+                {id: 'f16', name: 'Nut Butter Variety Pack', description: 'Almond, cashew and more', price: 18.99, image: 'https://picsum.photos/id/493/300/300', rating: 4.6, numRatings: 72, comments: [{user: 'Felix T.', text: 'Great protein source', rating: 5}, {user: 'Grace M.', text: 'Love the variety', rating: 4}]},
+                {id: 'f17', name: 'Maple Syrup', description: 'Grade A pure maple', price: 15.99, image: 'https://picsum.photos/id/508/300/300', rating: 4.7, numRatings: 63, comments: [{user: 'Henry B.', text: 'The real deal', rating: 5}, {user: 'Iris P.', text: 'Much better than store brands', rating: 5}]},
+                {id: 'f18', name: 'Gourmet Jam Set', description: 'Small-batch preserves', price: 22.99, image: 'https://picsum.photos/id/513/300/300', rating: 4.5, numRatings: 58, comments: [{user: 'Jack R.', text: 'Not too sweet', rating: 4}, {user: 'Kate L.', text: 'Wonderful flavors', rating: 5}]},
+                {id: 'f19', name: 'Infused Cooking Oils', description: 'Herb and citrus varieties', price: 16.99, image: 'https://picsum.photos/id/538/300/300', rating: 4.4, numRatings: 81, comments: [{user: 'Leo F.', text: 'Great for marinades', rating: 4}, {user: 'Mia S.', text: 'Enhances meals', rating: 5}]},
+                {id: 'f20', name: 'Artisan Crackers', description: 'Perfect for cheese pairings', price: 7.99, image: 'https://picsum.photos/id/555/300/300', rating: 4.2, numRatings: 95, comments: [{user: 'Nathan D.', text: 'Crispy texture', rating: 4}, {user: 'Olivia J.', text: 'Not too salty', rating: 4}]}
+            ],
+            electronics: [
+                {id: 'e1', name: 'Smartphone', description: 'Latest model with 5G', price: 799.99, image: 'https://picsum.photos/id/3/300/300', rating: 4.6, numRatings: 312, comments: [{user: 'Patrick B.', text: 'Amazing camera', rating: 5}, {user: 'Quinn N.', text: 'Fast and responsive', rating: 5}]},
+                {id: 'e2', name: 'Laptop', description: 'Ultra-slim performance', price: 1299.99, image: 'https://picsum.photos/id/1/300/300', rating: 4.7, numRatings: 256, comments: [{user: 'Raymond C.', text: 'Perfect for work', rating: 5}, {user: 'Sarah J.', text: 'Fast processor', rating: 5}]},
+                {id: 'e3', name: 'Tablet', description: 'High-resolution display', price: 499.99, image: 'https://picsum.photos/id/30/300/300', rating: 4.5, numRatings: 178, comments: [{user: 'Trevor L.', text: 'Great for reading', rating: 4}, {user: 'Uma K.', text: 'Responsive touchscreen', rating: 5}]},
+                {id: 'e4', name: 'Gaming Console', description: 'Next-gen gaming experience', price: 499.99, image: 'https://picsum.photos/id/96/300/300', rating: 4.8, numRatings: 245, comments: [{user: 'Vincent M.', text: 'Amazing graphics', rating: 5}, {user: 'Wendy S.', text: 'Perfect gaming machine', rating: 5}]},
+                {id: 'e5', name: 'Smart TV', description: '4K Ultra HD resolution', price: 899.99, image: 'https://picsum.photos/id/60/300/300', rating: 4.6, numRatings: 189, comments: [{user: 'Xavier P.', text: 'Vibrant colors', rating: 5}, {user: 'Yasmine T.', text: 'Great smart features', rating: 4}]},
+                {id: 'e6', name: 'Wireless Router', description: 'Gigabit Wi-Fi speeds', price: 129.99, image: 'https://picsum.photos/id/180/300/300', rating: 4.4, numRatings: 136, comments: [{user: 'Zane B.', text: 'Fast connection', rating: 4}, {user: 'Anna R.', text: 'Easy to set up', rating: 5}]},
+                {id: 'e7', name: 'Digital Camera', description: 'DSLR with multiple lenses', price: 799.99, image: 'https://picsum.photos/id/250/300/300', rating: 4.7, numRatings: 112, comments: [{user: 'Blake C.', text: 'Professional quality', rating: 5}, {user: 'Charlotte D.', text: 'Great for beginners', rating: 4}]},
+                {id: 'e8', name: 'Portable Speaker', description: 'Waterproof and rugged', price: 149.99, image: 'https://picsum.photos/id/6/300/300', rating: 4.5, numRatings: 203, comments: [{user: 'Derek N.', text: 'Impressive sound', rating: 5}, {user: 'Eva M.', text: 'Perfect for the beach', rating: 4}]},
+                {id: 'e9', name: 'Smart Home Hub', description: 'Voice-controlled assistant', price: 129.99, image: 'https://picsum.photos/id/116/300/300', rating: 4.3, numRatings: 167, comments: [{user: 'Frank S.', text: 'Controls everything', rating: 4}, {user: 'Gloria L.', text: 'Easy voice commands', rating: 5}]},
+                {id: 'e10', name: 'Computer Monitor', description: '27-inch 4K display', price: 349.99, image: 'https://picsum.photos/id/48/300/300', rating: 4.6, numRatings: 148, comments: [{user: 'Harold J.', text: 'Crisp image quality', rating: 5}, {user: 'Ingrid P.', text: 'Great for work', rating: 4}]},
+                {id: 'e11', name: 'Electric Toothbrush', description: 'Sonic cleaning technology', price: 79.99, image: 'https://picsum.photos/id/118/300/300', rating: 4.4, numRatings: 93, comments: [{user: 'Jake N.', text: 'Dentist recommended', rating: 4}, {user: 'Kim F.', text: 'Clean feeling', rating: 5}]},
+                {id: 'e12', name: 'Coffee Maker', description: 'Programmable brewing', price: 99.99, image: 'https://picsum.photos/id/225/300/300', rating: 4.5, numRatings: 122, comments: [{user: 'Lance R.', text: 'Great coffee every time', rating: 5}, {user: 'Maria T.', text: 'Easy to use', rating: 4}]},
+                {id: 'e13', name: 'Fitness Smartwatch', description: 'Health and activity tracking', price: 199.99, image: 'https://picsum.photos/id/111/300/300', rating: 4.7, numRatings: 211, comments: [{user: 'Nick S.', text: 'Accurate tracking', rating: 5}, {user: 'Olivia P.', text: 'Long battery life', rating: 5}]},
+                {id: 'e14', name: 'Noise-Cancelling Headphones', description: 'Immersive audio experience', price: 249.99, image: 'https://picsum.photos/id/16/300/300', rating: 4.8, numRatings: 256, comments: [{user: 'Paul M.', text: 'Amazing sound quality', rating: 5}, {user: 'Quinn J.', text: 'Great for flights', rating: 5}]},
+                {id: 'e15', name: 'Video Doorbell', description: 'HD security camera', price: 169.99, image: 'https://picsum.photos/id/183/300/300', rating: 4.5, numRatings: 147, comments: [{user: 'Randy C.', text: 'Easy installation', rating: 5}, {user: 'Susan K.', text: 'Great peace of mind', rating: 4}]},
+                {id: 'e16', name: 'Portable Charger', description: '20,000 mAh capacity', price: 49.99, image: 'https://picsum.photos/id/201/300/300', rating: 4.4, numRatings: 193, comments: [{user: 'Tyler B.', text: 'Charges phone multiple times', rating: 4}, {user: 'Vanessa L.', text: 'Great for travel', rating: 5}]},
+                {id: 'e17', name: 'Desktop Computer', description: 'High-performance gaming PC', price: 1499.99, image: 'https://picsum.photos/id/9/300/300', rating: 4.9, numRatings: 86, comments: [{user: 'Walter P.', text: 'Beast of a machine', rating: 5}, {user: 'Xena R.', text: 'Runs all games at max settings', rating: 5}]},
+                {id: 'e18', name: 'Wireless Mouse', description: 'Ergonomic design', price: 39.99, image: 'https://picsum.photos/id/90/300/300', rating: 4.3, numRatings: 167, comments: [{user: 'Yasmine F.', text: 'Comfortable grip', rating: 4}, {user: 'Zack T.', text: 'Smooth tracking', rating: 5}]},
+                {id: 'e19', name: 'Bluetooth Earbuds', description: 'True wireless audio', price: 129.99, image: 'https://picsum.photos/id/189/300/300', rating: 4.6, numRatings: 211, comments: [{user: 'Adam J.', text: 'Great sound quality', rating: 5}, {user: 'Bella D.', text: 'Stays in during workouts', rating: 4}]},
+                {id: 'e20', name: 'Smart Fridge', description: 'Connected kitchen appliance', price: 1999.99, image: 'https://picsum.photos/id/121/300/300', rating: 4.7, numRatings: 59, comments: [{user: 'Carl M.', text: 'Love the touchscreen', rating: 5}, {user: 'Donna S.', text: 'Great organization inside', rating: 5}]}
+            ],
+            fashion: [
+                {id: 'fa1', name: 'Leather Jacket', description: 'Classic style, genuine leather', price: 199.99, image: 'https://picsum.photos/id/669/300/300', rating: 4.6, numRatings: 87, comments: [{user: 'Eric T.', text: 'Great quality leather', rating: 5}, {user: 'Fiona P.', text: 'Stylish and durable', rating: 4}]},
+                {id: 'fa2', name: 'Designer Sunglasses', description: 'UV protection, trendy frames', price: 129.99, image: 'https://picsum.photos/id/318/300/300', rating: 4.4, numRatings: 112, comments: [{user: 'Greg A.', text: 'Look expensive', rating: 4}, {user: 'Hannah B.', text: 'Great UV protection', rating: 5}]},
+                {id: 'fa3', name: 'Athletic Sneakers', description: 'Performance running shoes', price: 89.99, image: 'https://picsum.photos/id/611/300/300', rating: 4.7, numRatings: 203, comments: [{user: 'Ian J.', text: 'Very comfortable', rating: 5}, {user: 'Julia M.', text: 'Great support', rating: 5}]},
+                {id: 'fa4', name: 'Designer Watch', description: 'Luxury timepiece', price: 249.99, image: 'https://picsum.photos/id/175/300/300', rating: 4.8, numRatings: 76, comments: [{user: 'Kevin L.', text: 'Elegant design', rating: 5}, {user: 'Laura N.', text: 'Gets compliments', rating: 5}]},
+                {id: 'fa5', name: 'Silk Scarf', description: 'Soft luxurious material', price: 59.99, image: 'https://picsum.photos/id/642/300/300', rating: 4.5, numRatings: 54, comments: [{user: 'Mark P.', text: 'Beautiful colors', rating: 5}, {user: 'Nancy R.', text: 'Great gift', rating: 4}]},
+                {id: 'fa6', name: 'Leather Wallet', description: 'Handcrafted with RFID protection', price: 49.99, image: 'https://picsum.photos/id/583/300/300', rating: 4.3, numRatings: 123, comments: [{user: 'Oscar T.', text: 'Quality construction', rating: 4}, {user: 'Pamela S.', text: 'Love the many pockets', rating: 5}]},
+                {id: 'fa7', name: 'Summer Dress', description: 'Light floral pattern', price: 79.99, image: 'https://picsum.photos/id/628/300/300', rating: 4.6, numRatings: 97, comments: [{user: 'Quinn M.', text: 'Perfect fit', rating: 5}, {user: 'Rachel L.', text: 'Beautiful fabric', rating: 4}]},
+                {id: 'fa8', name: 'Formal Suit', description: 'Classic tailored fit', price: 299.99, image: 'https://picsum.photos/id/674/300/300', rating: 4.7, numRatings: 65, comments: [{user: 'Simon P.', text: 'Professional look', rating: 5}, {user: 'Tracy V.', text: 'Great for interviews', rating: 5}]},
+                {id: 'fa9', name: 'Designer Handbag', description: 'Premium quality leather', price: 199.99, image: 'https://picsum.photos/id/637/300/300', rating: 4.8, numRatings: 112, comments: [{user: 'Uma B.', text: 'Elegant design', rating: 5}, {user: 'Victor N.', text: 'Spacious interior', rating: 5}]},
+                {id: 'fa10', name: 'Winter Coat', description: 'Insulated waterproof design', price: 149.99, image: 'https://picsum.photos/id/623/300/300', rating: 4.5, numRatings: 87, comments: [{user: 'Wendy T.', text: 'Very warm', rating: 5}, {user: 'Xavier L.', text: 'Good for snow', rating: 4}]},
+                {id: 'fa11', name: 'Cashmere Sweater', description: 'Soft luxury knitwear', price: 129.99, image: 'https://picsum.photos/id/631/300/300', rating: 4.6, numRatings: 74, comments: [{user: 'Yasmine P.', text: 'So soft', rating: 5}, {user: 'Zach B.', text: 'Great quality', rating: 4}]},
+                {id: 'fa12', name: 'Leather Boots', description: 'Durable all-weather design', price: 159.99, image: 'https://picsum.photos/id/603/300/300', rating: 4.7, numRatings: 98, comments: [{user: 'Alice M.', text: 'Comfortable walking', rating: 5}, {user: 'Bob S.', text: 'Good traction', rating: 5}]},
+                {id: 'fa13', name: 'Designer Belt', description: 'Premium leather with metal buckle', price: 69.99, image: 'https://picsum.photos/id/625/300/300', rating: 4.4, numRatings: 65, comments: [{user: 'Carol T.', text: 'Great quality', rating: 4}, {user: 'Doug P.', text: 'Stylish accessory', rating: 5}]},
+                {id: 'fa14', name: 'Swimwear Set', description: 'Quick-dry fabric', price: 49.99, image: 'https://picsum.photos/id/553/300/300', rating: 4.3, numRatings: 86, comments: [{user: 'Ellen R.', text: 'True to size', rating: 4}, {user: 'Frank M.', text: 'Great fit', rating: 5}]},
+                {id: 'fa15', name: 'Wool Hat', description: 'Warm winter fashion', price: 29.99, image: 'https://picsum.photos/id/640/300/300', rating: 4.2, numRatings: 54, comments: [{user: 'Gina L.', text: 'Keeps head warm', rating: 4}, {user: 'Harry N.', text: 'Stylish look', rating: 4}]},
+                {id: 'fa16', name: 'Designer Jeans', description: 'Premium denim comfort', price: 89.99, image: 'https://picsum.photos/id/685/300/300', rating: 4.6, numRatings: 124, comments: [{user: 'Irene P.', text: 'Perfect fit', rating: 5}, {user: 'Jack T.', text: 'Great style', rating: 4}]},
+                {id: 'fa17', name: 'Silk Tie', description: 'Elegant pattern design', price: 39.99, image: 'https://picsum.photos/id/556/300/300', rating: 4.5, numRatings: 43, comments: [{user: 'Kim S.', text: 'High quality silk', rating: 5}, {user: 'Lance M.', text: 'Great for work', rating: 4}]},
+                {id: 'fa18', name: 'Running Leggings', description: 'Moisture-wicking fabric', price: 49.99, image: 'https://picsum.photos/id/604/300/300', rating: 4.7, numRatings: 111, comments: [{user: 'Maria B.', text: 'Stays in place', rating: 5}, {user: 'Nick L.', text: 'Good compression', rating: 5}]},
+                {id: 'fa19', name: 'Dress Shirt', description: 'Wrinkle-free cotton blend', price: 59.99, image: 'https://picsum.photos/id/528/300/300', rating: 4.4, numRatings: 87, comments: [{user: 'Olivia P.', text: 'Great for work', rating: 4}, {user: 'Paul K.', text: 'Good quality', rating: 5}]},
+                {id: 'fa20', name: 'Leather Gloves', description: 'Touchscreen compatible', price: 34.99, image: 'https://picsum.photos/id/614/300/300', rating: 4.3, numRatings: 65, comments: [{user: 'Quincy R.', text: 'Warm and stylish', rating: 4}, {user: 'Rose M.', text: 'Good phone control', rating: 5}]}
+            ],
+            health: [
+                {id: 'h1', name: 'Vitamin D Supplements', description: '90-day supply, high potency', price: 19.99, image: 'https://picsum.photos/id/424/300/300', rating: 4.7, numRatings: 98, comments: [{user: 'Sam T.', text: 'Noticed more energy', rating: 5}, {user: 'Tina L.', text: 'Easy to swallow', rating: 5}]},
+                {id: 'h2', name: 'Essential Oil Set', description: 'Therapeutic grade oils', price: 29.99, image: 'https://picsum.photos/id/337/300/300', rating: 4.6, numRatings: 123, comments: [{user: 'Uma P.', text: 'Great scents', rating: 5}, {user: 'Victor S.', text: 'Good quality', rating: 4}]},
+                {id: 'h3', name: 'Yoga Mat', description: 'Non-slip eco-friendly material', price: 34.99, image: 'https://picsum.photos/id/461/300/300', rating: 4.5, numRatings: 178, comments: [{user: 'Walter M.', text: 'Great cushioning', rating: 4}, {user: 'Xena B.', text: 'Good grip', rating: 5}]},
+                {id: 'h4', name: 'Digital Scale', description: 'Measures weight and body composition', price: 45.99, image: 'https://picsum.photos/id/448/300/300', rating: 4.4, numRatings: 87, comments: [{user: 'Yvonne T.', text: 'Accurate measurements', rating: 4}, {user: 'Zack L.', text: 'Easy to use', rating: 5}]},
+                {id: 'h5', name: 'Resistance Bands', description: 'Set of 5 different strengths', price: 24.99, image: 'https://picsum.photos/id/416/300/300', rating: 4.8, numRatings: 156, comments: [{user: 'Adam P.', text: 'Great for home workouts', rating: 5}, {user: 'Brenda M.', text: 'Durable material', rating: 5}]},
+                {id: 'h6', name: 'Meditation Cushion', description: 'Ergonomic design for comfort', price: 39.99, image: 'https://picsum.photos/id/486/300/300', rating: 4.5, numRatings: 76, comments: [{user: 'Charles S.', text: 'Very comfortable', rating: 5}, {user: 'Diana T.', text: 'Helps with posture', rating: 4}]},
+                {id: 'h7', name: 'Protein Powder', description: 'Plant-based, 25g per serving', price: 34.99, image: 'https://picsum.photos/id/431/300/300', rating: 4.6, numRatings: 211, comments: [{user: 'Evan L.', text: 'Great taste', rating: 5}, {user: 'Faye P.', text: 'Mixes well', rating: 4}]},
+                {id: 'h8', name: 'Acupressure Mat', description: 'Relieves back and neck pain', price: 49.99, image: 'https://picsum.photos/id/437/300/300', rating: 4.7, numRatings: 98, comments: [{user: 'George M.', text: 'Great for tension', rating: 5}, {user: 'Helen S.', text: 'Works wonders', rating: 5}]},
+                {id: 'h9', name: 'Natural Face Cream', description: 'Organic ingredients, anti-aging', price: 29.99, image: 'https://picsum.photos/id/353/300/300', rating: 4.5, numRatings: 123, comments: [{user: 'Isaac T.', text: 'Skin feels soft', rating: 4}, {user: 'Julie P.', text: 'No irritation', rating: 5}]},
+                {id: 'h10', name: 'Herbal Tea Collection', description: 'Variety of wellness blends', price: 19.99, image: 'https://picsum.photos/id/284/300/300', rating: 4.4, numRatings: 87, comments: [{user: 'Keith M.', text: 'Great flavors', rating: 4}, {user: 'Linda S.', text: 'Relaxing effects', rating: 5}]},
+                {id: 'h11', name: 'Hand Grip Strengthener', description: 'Adjustable resistance', price: 14.99, image: 'https://picsum.photos/id/372/300/300', rating: 4.3, numRatings: 65, comments: [{user: 'Mike P.', text: 'Effective training', rating: 4}, {user: 'Nina T.', text: 'Well made', rating: 5}]},
+                {id: 'h12', name: 'Organic Lip Balm Set', description: 'Moisturizing, all natural', price: 12.99, image: 'https://picsum.photos/id/367/300/300', rating: 4.6, numRatings: 98, comments: [{user: 'Oscar L.', text: 'Very moisturizing', rating: 5}, {user: 'Paula M.', text: 'Love the scents', rating: 4}]},
+                {id: 'h13', name: 'Fitness Tracker Band', description: 'Waterproof, heart rate monitor', price: 89.99, image: 'https://picsum.photos/id/119/300/300', rating: 4.7, numRatings: 187, comments: [{user: 'Quincy S.', text: 'Accurate tracking', rating: 5}, {user: 'Ruth P.', text: 'Great battery life', rating: 5}]},
+                {id: 'h14', name: 'Detox Bath Salts', description: 'Epsom salt with essential oils', price: 16.99, image: 'https://picsum.photos/id/377/300/300', rating: 4.5, numRatings: 76, comments: [{user: 'Steve T.', text: 'Relaxing soak', rating: 5}, {user: 'Tara L.', text: 'Great scent', rating: 4}]},
+                {id: 'h15', name: 'Natural Deodorant', description: 'Aluminum-free protection', price: 9.99, image: 'https://picsum.photos/id/335/300/300', rating: 4.2, numRatings: 142, comments: [{user: 'Ursula M.', text: 'Works well', rating: 4}, {user: 'Vincent P.', text: 'No irritation', rating: 4}]},
+                {id: 'h16', name: 'Sleep Mask', description: 'Contoured for comfort', price: 14.99, image: 'https://picsum.photos/id/350/300/300', rating: 4.6, numRatings: 95, comments: [{user: 'Wendy S.', text: 'Great for travel', rating: 5}, {user: 'Xavier T.', text: 'Blocks light well', rating: 4}]},
+                {id: 'h17', name: 'Foam Roller', description: 'Deep tissue massage', price: 22.99, image: 'https://picsum.photos/id/453/300/300', rating: 4.7, numRatings: 88, comments: [{user: 'Yasmine L.', text: 'Great for recovery', rating: 5}, {user: 'Zane P.', text: 'Durable material', rating: 5}]},
+                {id: 'h18', name: 'Organic Hair Mask', description: 'Deep conditioning treatment', price: 19.99, image: 'https://picsum.photos/id/348/300/300', rating: 4.5, numRatings: 76, comments: [{user: 'Andrea M.', text: 'Hair feels softer', rating: 5}, {user: 'Bruce S.', text: 'Nice scent', rating: 4}]},
+                {id: 'h19', name: 'Meal Prep Containers', description: 'BPA-free, portion control', price: 24.99, image: 'https://picsum.photos/id/292/300/300', rating: 4.4, numRatings: 112, comments: [{user: 'Cathy T.', text: 'Great quality', rating: 4}, {user: 'Doug L.', text: 'Durable', rating: 5}]},
+                {id: 'h20', name: 'Air Purifying Plants', description: 'Set of 3 indoor plants', price: 39.99, image: 'https://picsum.photos/id/106/300/300', rating: 4.8, numRatings: 65, comments: [{user: 'Emily P.', text: 'Beautiful addition', rating: 5}, {user: 'Frank M.', text: 'Easy to care for', rating: 5}]}
+            ]
+        };
+        
+        // Cart functionality
+        let cartItems = [];
+        let cartItemCount = 0;
+        let currentProduct = null; // Track current product for comments
+        
+        // Create product card template
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card bg-white dark:bg-darkCard rounded-lg shadow-md overflow-hidden transition-all duration-300 scroll-hidden';
+            
+            // Generate stars based on product rating
+            const starsHtml = generateStarRating(product.rating);
+            
+            card.innerHTML = `
+                <img src="${product.image}" alt="${product.name}" class="w-full h-52 object-cover ">
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate whitespace-nowrap overflow-hidden">${product.name}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">${product.description}</p>
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-lg font-bold text-gray-900 dark:text-white">$${product.price.toFixed(2)}</span>
+                        <div class="flex items-center">
+                            <button class="quantity-decrease p-1 rounded-l bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">-</button>
+                            <input type="number" min="1" value="1" class="quantity w-12 text-center border-y border-gray-200 dark:border-gray-700 bg-white dark:bg-darkCard text-gray-700 dark:text-gray-300 text-base">
+                            <button class="quantity-increase p-1 rounded-r bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">+</button>
+                        </div>
+                    </div>
+                    <button class="add-to-cart w-full py-2 bg-secondary hover:bg-yellow-600 text-white font-semibold rounded transition-colors" data-id="${product.id}" data-category="${product.id.charAt(0)}">
+                        Add to Cart
+                    </button>
+                    <div class="mt-3 flex justify-between items-center">
+                        <div>
+                            <div class="mb-1 flex items-center">
+                                <div class="mr-2">${starsHtml}</div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">(${product.numRatings})</span>
+                            </div>
+                        </div>
+                        <button class="view-comments px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors" data-id="${product.id}" data-category="${product.id.charAt(0)}">
+                            Comments
+                        </button>
+                    </div>
+                </div>
+            `;
+            // Add event listeners for quantity buttons
+            const quantityInput = card.querySelector('.quantity');
+            card.querySelector('.quantity-decrease').addEventListener('click', () => {
+                if (quantityInput.value > 1) {
+                    quantityInput.value = parseInt(quantityInput.value) - 1;
+                }
+            });
+            
+            card.querySelector('.quantity-increase').addEventListener('click', () => {
+                quantityInput.value = parseInt(quantityInput.value) + 1;
+            });
+            
+            // Add to cart event listener
+            card.querySelector('.add-to-cart').addEventListener('click', (e) => {
+                const productId = e.target.dataset.id;
+                const categoryChar = e.target.dataset.category;
+                let category;
+                
+                switch(categoryChar) {
+                    case 'f': category = 'foodstuff'; break;
+                    case 'e': category = 'electronics'; break;
+                    case 'a': category = 'affiliate'; break;
+                    case 'h': category = 'health'; break;
+                    case 'f': 
+                        if (productId.startsWith('fa')) {
+                            category = 'fashion';
+                        } else {
+                            category = 'foodstuff';
+                        }
+                        break;
+                    default: category = 'foodstuff';
+                }
+                
+                const product = products[category].find(p => p.id === productId);
+                const quantity = parseInt(quantityInput.value);
+                
+                // Add to cart
+                addToCart(product, quantity);
+                
+                // Show notification
+                showNotification(`${product.name} added to cart!`);
+            });
+            
+            // View comments event listener
+            card.querySelector('.view-comments').addEventListener('click', (e) => {
+                const productId = e.target.dataset.id;
+                const categoryChar = e.target.dataset.category;
+                let category;
+                
+                switch(categoryChar) {
+                    case 'f': 
+                        if (productId.startsWith('fa')) {
+                            category = 'fashion';
+                        } else {
+                            category = 'foodstuff';
+                        }
+                        break;
+                    case 'e': category = 'electronics'; break;
+                    case 'a': category = 'affiliate'; break;
+                    case 'h': category = 'health'; break;
+                    default: category = 'foodstuff';
+                }
+                
+                currentProduct = products[category].find(p => p.id === productId);
+                showCommentsModal(currentProduct);
+            });
+            
+            return card;
+        }
+        
+        // Create affiliate product card template
+        function createAffiliateProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card bg-white dark:bg-darkCard rounded-lg shadow-md overflow-hidden transition-all duration-300 scroll-hidden';
+            
+            // Generate stars based on product rating
+            const starsHtml = generateStarRating(product.rating);
+            
+            card.innerHTML = `
+                <img src="${product.image}" alt="${product.name}" class="w-full h-52 object-cover ">
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate whitespace-nowrap overflow-hidden">${product.name}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">${product.description}</p>
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-lg font-bold text-gray-900 dark:text-white">$${product.price.toFixed(2)}</span>
+                    </div>
+                    <a href="${product.link}" target="_blank" class="block w-full py-2 bg-secondary hover:bg-yellow-600 text-white font-semibold rounded transition-colors text-center">
+                        Get Course
+                    </a>
+                    <div class="mt-3 flex justify-between items-center">
+                        <div>
+                            <div class="mb-1 flex items-center">
+                                <div class="mr-2">${starsHtml}</div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">(${product.numRatings})</span>
+                            </div>
+                        </div>
+                        <button class="view-comments px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors" data-id="${product.id}" data-category="a">
+                            Comments
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // View comments event listener
+            card.querySelector('.view-comments').addEventListener('click', (e) => {
+                const productId = e.target.dataset.id;
+                currentProduct = products.affiliate.find(p => p.id === productId);
+                showCommentsModal(currentProduct);
+            });
+            
+            return card;
+        }
+        
+        // Generate star rating HTML
+        function generateStarRating(rating) {
+            const fullStars = Math.floor(rating);
+            const halfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+            
+            let starsHtml = '';
+            
+            // Add full stars
+            for (let i = 0; i < fullStars; i++) {
+                starsHtml += '<i class="fas fa-star text-yellow-400"></i>';
+            }
+            
+            // Add half star if needed
+            if (halfStar) {
+                starsHtml += '<i class="fas fa-star-half-alt text-yellow-400"></i>';
+            }
+            
+            // Add empty stars
+            for (let i = 0; i < emptyStars; i++) {
+                starsHtml += '<i class="far fa-star text-yellow-400"></i>';
+            }
+            
+            return starsHtml;
+        }
+        
+        // Show comments modal
+        function showCommentsModal(product) {
+            const commentsModal = document.getElementById('commentsModal');
+            const commentsList = document.getElementById('commentsList');
+            const commentForm = document.getElementById('commentForm');
+            
+            // Clear previous comments
+            commentsList.innerHTML = '';
+            
+            // Add product name and rating to modal heading
+            document.querySelector('#commentsModal h3').textContent = `Comments for ${product.name}`;
+            
+            // Add comments to modal
+            if (product.comments && product.comments.length > 0) {
+                product.comments.forEach(comment => {
+                    const commentEl = document.createElement('div');
+                    commentEl.className = 'border-b border-gray-200 dark:border-gray-700 py-3';
+                    
+                    const starsHtml = generateStarRating(comment.rating);
+                    
+                    commentEl.innerHTML = `
+                        <div class="flex items-center mb-1">
+                            <span class="font-medium text-gray-800 dark:text-white mr-2">${comment.user}</span>
+                            <div class="text-sm">${starsHtml}</div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400">${comment.text}</p>
+                    `;
+                    
+                    commentsList.appendChild(commentEl);
+                });
+            } else {
+                commentsList.innerHTML = '<p class="text-gray-500 dark:text-gray-400 py-3">No comments yet. Be the first to comment!</p>';
+            }
+            
+            // Set up comment form submission
+            commentForm.onsubmit = function(e) {
+                e.preventDefault();
+                const commentText = document.getElementById('commentText').value;
+                
+                if (commentText.trim()) {
+                    // Add the new comment
+                    const newComment = {
+                        user: 'You',
+                        text: commentText,
+                        rating: 5 // Default rating
+                    };
+                    
+                    if (!product.comments) {
+                        product.comments = [];
+                    }
+                    
+                    product.comments.push(newComment);
+                    
+                    // Add the comment to the display
+                    const commentEl = document.createElement('div');
+                    commentEl.className = 'border-b border-gray-200 dark:border-gray-700 py-3';
+                    
+                    commentEl.innerHTML = `
+                        <div class="flex items-center mb-1">
+                            <span class="font-medium text-gray-800 dark:text-white mr-2">${newComment.user}</span>
+                            <div class="text-sm">${generateStarRating(newComment.rating)}</div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400">${newComment.text}</p>
+                    `;
+                    
+                    commentsList.appendChild(commentEl);
+                    
+                    // Clear form
+                    document.getElementById('commentText').value = '';
+                    
+                    // Show success notification
+                    showNotification('Comment posted successfully!');
+                }
+            };
+            
+            // Show modal
+            commentsModal.classList.remove('hidden');
+        }
+        
+        // Function to show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-secondary text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Add to cart function
+        function addToCart(product, quantity) {
+            const existingItem = cartItems.find(item => item.id === product.id);
+            
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cartItems.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    quantity: quantity
+                });
+            }
+            
+            cartItemCount += quantity;
+            updateCartCount();
+            updateCartDisplay();
+        }
+        
+        // Update cart count
+        function updateCartCount() {
+            document.getElementById('cartCount').textContent = cartItemCount;
+        }
+        
+        // Update cart display
+        function updateCartDisplay() {
+            const cartItemsContainer = document.getElementById('cartItems');
+            const cartSubtotal = document.getElementById('cartSubtotal');
+            
+            // Clear container
+            cartItemsContainer.innerHTML = '';
+            
+            if (cartItems.length === 0) {
+                cartItemsContainer.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-6">Your cart is empty</p>';
+                cartSubtotal.textContent = '$0.00';
+                return;
+            }
+            
+            let total = 0;
+            
+            // Add items to cart
+            cartItems.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item flex items-center border-b border-gray-200 dark:border-gray-700 py-4';
+                cartItem.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded">
+                    <div class="ml-4 flex-grow">
+                        <h4 class="text-gray-900 dark:text-white font-medium">${item.name}</h4>
+                        <div class="flex items-center mt-1">
+                            <span class="text-gray-700 dark:text-gray-300">$${item.price.toFixed(2)} × ${item.quantity}</span>
+                            <span class="text-gray-900 dark:text-white font-semibold ml-auto">$${itemTotal.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <button class="remove-item ml-4 text-red-500 hover:text-red-700 dark:hover:text-red-400 p-1" data-index="${index}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                
+                cartItemsContainer.appendChild(cartItem);
+                
+                // Add event listener to remove button
+                cartItem.querySelector('.remove-item').addEventListener('click', (e) => {
+                    const index = parseInt(e.currentTarget.dataset.index);
+                    removeFromCart(index);
+                });
+            });
+            
+            // Update subtotal
+            cartSubtotal.textContent = `$${total.toFixed(2)}`;
+            
+            // Also update checkout items
+            updateCheckoutItems();
+        }
+        
+        // Update checkout items
+        function updateCheckoutItems() {
+            const checkoutItemsContainer = document.getElementById('checkoutItems');
+            const checkoutTotal = document.getElementById('checkoutTotal');
+            
+            // Clear container
+            checkoutItemsContainer.innerHTML = '';
+            
+            if (cartItems.length === 0) {
+                checkoutItemsContainer.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-2">Your cart is empty</p>';
+                checkoutTotal.textContent = '$0.00';
+                return;
+            }
+            
+            let total = 0;
+            
+            // Add items to checkout
+            cartItems.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                const checkoutItem = document.createElement('div');
+                checkoutItem.className = 'flex justify-between py-2';
+                checkoutItem.innerHTML = `
+                    <span class="text-gray-700 dark:text-gray-300">${item.name} × ${item.quantity}</span>
+                    <span class="text-gray-900 dark:text-white">$${itemTotal.toFixed(2)}</span>
+                `;
+                
+                checkoutItemsContainer.appendChild(checkoutItem);
+            });
+            
+            // Update total
+            checkoutTotal.textContent = `$${total.toFixed(2)}`;
+        }
+        
+        // Remove from cart
+        function removeFromCart(index) {
+            const item = cartItems[index];
+            cartItemCount -= item.quantity;
+            cartItems.splice(index, 1);
+            
+            updateCartCount();
+            updateCartDisplay();
+        }
+        
+        // Initialize product displays
+        function initProducts() {
+            const affiliateContainer = document.getElementById('affiliateProducts');
+            const foodstuffContainer = document.getElementById('foodstuffProducts');
+            const electronicsContainer = document.getElementById('electronicsProducts');
+            const fashionContainer = document.getElementById('fashionProducts');
+            const healthContainer = document.getElementById('healthProducts');
+            
+            // Clear containers
+            affiliateContainer.innerHTML = '';
+            foodstuffContainer.innerHTML = '';
+            electronicsContainer.innerHTML = '';
+            fashionContainer.innerHTML = '';
+            healthContainer.innerHTML = '';
+            
+            // Add products to containers
+            products.affiliate.forEach(product => {
+                affiliateContainer.appendChild(createAffiliateProductCard(product));
+            });
+            
+            products.foodstuff.forEach(product => {
+                foodstuffContainer.appendChild(createProductCard(product));
+            });
+            
+            products.electronics.forEach(product => {
+                electronicsContainer.appendChild(createProductCard(product));
+            });
+            
+            products.fashion.forEach(product => {
+                fashionContainer.appendChild(createProductCard(product));
+            });
+            
+            products.health.forEach(product => {
+                healthContainer.appendChild(createProductCard(product));
+            });
+        }
+        
+        // Handle theme toggle
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            
+            // Check for stored preference or system preference
+            if (localStorage.getItem('theme') === 'dark' || 
+                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            themeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+            
+            // Listen for system preference changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (!localStorage.getItem('theme')) { // Only if user hasn't manually set preference
+                    if (e.matches) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                }
+            });
+        }
+        
+        // Handle mobile menu
+        function setupMobileMenu() {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const closeMenuBtn = document.getElementById('closeMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+            
+            hamburgerBtn.addEventListener('click', () => {
+                mobileMenu.classList.add('active');
+                hamburgerBtn.classList.add('menu-open');
+            });
+            
+            closeMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                hamburgerBtn.classList.remove('menu-open');
+            });
+            
+            // Close menu when a link is clicked
+            mobileMenuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.remove('active');
+                    hamburgerBtn.classList.remove('menu-open');
+                });
+            });
+            
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenu.contains(e.target) && !hamburgerBtn.contains(e.target) && mobileMenu.classList.contains('active')) {
+                    mobileMenu.classList.remove('active');
+                    hamburgerBtn.classList.remove('menu-open');
+                }
+            });
+        }
+        
+        // Handle cart modal
+        function setupCartModal() {
+            const cartBtn = document.getElementById('cartBtn');
+            const closeCartBtn = document.getElementById('closeCartBtn');
+            const cartModal = document.getElementById('cartModal');
+            
+            cartBtn.addEventListener('click', () => {
+                cartModal.classList.remove('hidden');
+                updateCartDisplay();
+            });
+            
+            closeCartBtn.addEventListener('click', () => {
+                cartModal.classList.add('hidden');
+            });
+            
+            // Close when clicking outside
+            cartModal.addEventListener('click', (e) => {
+                if (e.target === cartModal) {
+                    cartModal.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Setup authentication modals
+        function setupAuthModals() {
+            const signInBtn = document.getElementById('signInBtn');
+            const signUpBtn = document.getElementById('signUpBtn');
+            const mobileSignInBtn = document.getElementById('mobileSignInBtn');
+            const mobileSignUpBtn = document.getElementById('mobileSignUpBtn');
+            const showSignUpBtn = document.getElementById('showSignUpBtn');
+            const showSignInBtn = document.getElementById('showSignInBtn');
+            const signInModal = document.getElementById('signInModal');
+            const signUpModal = document.getElementById('signUpModal');
+            const closeModalBtns = document.querySelectorAll('.close-modal');
+            
+            // Open sign in modal
+            signInBtn.addEventListener('click', () => {
+                signInModal.classList.remove('hidden');
+            });
+            
+            mobileSignInBtn.addEventListener('click', () => {
+                signInModal.classList.remove('hidden');
+                // Also close mobile menu
+                document.getElementById('mobileMenu').classList.remove('active');
+                document.getElementById('hamburgerBtn').classList.remove('menu-open');
+            });
+            
+            // Open sign up modal
+            signUpBtn.addEventListener('click', () => {
+                signUpModal.classList.remove('hidden');
+            });
+            
+            mobileSignUpBtn.addEventListener('click', () => {
+                signUpModal.classList.remove('hidden');
+                // Also close mobile menu
+                document.getElementById('mobileMenu').classList.remove('active');
+                document.getElementById('hamburgerBtn').classList.remove('menu-open');
+            });
+            
+            // Switch between modals
+            showSignUpBtn.addEventListener('click', () => {
+                signInModal.classList.add('hidden');
+                signUpModal.classList.remove('hidden');
+            });
+            
+            showSignInBtn.addEventListener('click', () => {
+                signUpModal.classList.add('hidden');
+                signInModal.classList.remove('hidden');
+            });
+            
+            // Close modals
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modal = btn.closest('.modal');
+                    modal.classList.add('hidden');
+                });
+            });
+            
+            // Close when clicking outside
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Handle form submissions
+            const signInForm = document.getElementById('signInForm');
+            const signUpForm = document.getElementById('signUpForm');
+            
+            signInForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                // In a real app, you would send this to the server
+                showNotification('Sign in successful!');
+                signInModal.classList.add('hidden');
+            });
+            
+            signUpForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                // Validate password match
+                const password = document.getElementById('signUpPassword').value;
+                const confirmPassword = document.getElementById('signUpConfirmPassword').value;
+                
+                if (password !== confirmPassword) {
+                    showNotification('Passwords do not match!');
+                    return;
+                }
+                
+                // In a real app, you would send this to the server
+                showNotification('Account created successfully!');
+                signUpModal.classList.add('hidden');
+            });
+        }
+        
+        // Setup checkout process
+        function setupCheckout() {
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            const checkoutModal = document.getElementById('checkoutModal');
+            const closeCheckoutBtn = document.querySelector('#checkoutModal .close-modal');
+            const completePaymentBtn = document.getElementById('completePaymentBtn');
+            const paymentMethodRadios = document.querySelectorAll('input[name="paymentMethod"]');
+            const mtnPaymentDetails = document.getElementById('mtnPaymentDetails');
+            const cardPaymentDetails = document.getElementById('cardPaymentDetails');
+            
+            // Open checkout modal
+            checkoutBtn.addEventListener('click', () => {
+                // Only show checkout if cart is not empty
+                if (cartItems.length > 0) {
+                    checkoutModal.classList.remove('hidden');
+                    document.getElementById('cartModal').classList.add('hidden');
+                    updateCheckoutItems();
+                } else {
+                    showNotification('Your cart is empty!');
+                }
+            });
+            
+            // Close checkout modal
+            closeCheckoutBtn.addEventListener('click', () => {
+                checkoutModal.classList.add('hidden');
+            });
+            
+            // Close when clicking outside
+            checkoutModal.addEventListener('click', (e) => {
+                if (e.target === checkoutModal) {
+                    checkoutModal.classList.add('hidden');
+                }
+            });
+            
+            // Toggle payment method details
+            paymentMethodRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'mtn') {
+                        mtnPaymentDetails.classList.remove('hidden');
+                        cardPaymentDetails.classList.add('hidden');
+                    } else if (radio.value === 'card') {
+                        mtnPaymentDetails.classList.add('hidden');
+                        cardPaymentDetails.classList.remove('hidden');
+                    }
+                });
+            });
+            
+            // Complete payment
+            completePaymentBtn.addEventListener('click', () => {
+                showNotification('Payment completed successfully!');
+                checkoutModal.classList.add('hidden');
+                
+                // Clear cart
+                cartItems = [];
+                cartItemCount = 0;
+                updateCartCount();
+                updateCartDisplay();
+            });
+        }
+        
+        // Handle comments modal
+        function setupCommentsModal() {
+            const commentsModal = document.getElementById('commentsModal');
+            const closeCommentsBtn = document.querySelector('#commentsModal .close-modal');
+            
+            // Close comments modal
+            closeCommentsBtn.addEventListener('click', () => {
+                commentsModal.classList.add('hidden');
+            });
+            
+            // Close when clicking outside
+            commentsModal.addEventListener('click', (e) => {
+                if (e.target === commentsModal) {
+                    commentsModal.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Handle scroll animations
+        function setupScrollAnimations() {
+            const scrollElements = document.querySelectorAll('.scroll-hidden');
+            const scrollTopBtn = document.getElementById('scrollTopBtn');
+            
+            const elementInView = (el, dividend = 1) => {
+                const elementTop = el.getBoundingClientRect().top;
+                return (elementTop <= (window.innerHeight || document.documentElement.clientHeight) / dividend);
+            };
+            
+            const displayScrollElement = (element) => {
+                element.classList.add('animate-fade-in-up');
+            };
+            
+            const handleScrollAnimation = () => {
+                scrollElements.forEach(el => {
+                    if (elementInView(el, 1.25)) {
+                        displayScrollElement(el);
+                    }
+                });
+                
+                // Show/hide scroll-to-top button
+                if (window.scrollY > 300) {
+                    scrollTopBtn.classList.remove('opacity-0', 'invisible');
+                    scrollTopBtn.classList.add('opacity-100');
+                } else {
+                    scrollTopBtn.classList.add('opacity-0', 'invisible');
+                    scrollTopBtn.classList.remove('opacity-100');
+                }
+            };
+            
+            // Scroll to top when button is clicked
+            scrollTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            window.addEventListener('scroll', () => {
+                handleScrollAnimation();
+            });
+            
+            // Initial check for elements in view
+            handleScrollAnimation();
+        }
+        
+        // Initialize everything when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for system theme preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            initProducts();
+            setupThemeToggle();
+            setupMobileMenu();
+            setupCartModal();
+            setupAuthModals();
+            setupCheckout();
+            setupCommentsModal();
+            setupScrollAnimations();
+        });
+    </script>
+</body>
+</html>
