@@ -45,8 +45,8 @@
       <div class="col-md-6">
         <h4 class="mb-3">Our Contact Details</h4>
         <ul class="list-unstyled">
-          <li><strong>Phone:</strong> +1 (123) 456-7890</li>
-          <li><strong>Email:</strong> <a href="mailto:support@example.com">atebapatrice@gmail.com</a></li>
+          <li><strong>Phone:</strong> +17207987331</li>
+          <li><strong>Email:</strong> <a href="mailto:support@example.com">fedext894@gmail.com</a></li>
           <li><strong>Address:</strong> 123 E-commerce St, Suite 500, City, Country</li>
         </ul>
 

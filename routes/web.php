@@ -89,7 +89,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -113,7 +113,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/showtracking/{id}', [AdminController::class, 'showtracking'])->name('showtracking');
     Route::post('/showtracking/{id}', [AdminController::class, 'updatetracking'])->name('updatetracking');
     
-});
+
 Route::post('/search', [shoppingController::class, 'search'])->name('search');
 Route::post('/place-order', [shoppingController::class, 'placeOrder'])->name('place_order');
 

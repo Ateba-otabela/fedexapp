@@ -64,7 +64,9 @@
     <div class="collapse navbar-collapse" id="mainNavbar">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="/admin">dashboard</a></li>
+        
+         <li class="nav-item"><a class="nav-link" href="/admin">dashboard</a></li>
+        
         <li class="nav-item"><a class="nav-link" href="/order">Orders</a></li>
         <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
         <li class="nav-item"><a class="nav-link" href="/tracking">Tracking</a></li>
@@ -72,11 +74,11 @@
       </ul>
         <?php
           //Small php code to display the cart count
-              use App\Models\cart;
-              $id = Auth::user()->id;
+    //           use App\Models\cart;
+    //           $id = Auth::user()->id;
    
-    $cart_count = cart::where('user_id',$id)->count();
-        ?>
+    // $cart_count = cart::where('user_id',$id)->count();
+    //     ?>
       <!-- Search bar -->
       <form action="{{ route('search') }}" method="post" class="d-flex me-3" role="search">
         @csrf
@@ -92,34 +94,34 @@
       </form>
 
       <!-- Cart + Auth -->
-       @auth
+       
         
       
       <a href="/cart" class="btn btn-outline-dark btn-sm me-2">
         <i class="bi bi-cart"></i> Cart
         
       </a>
-<span class=" mt-2 rounded-circle bg-danger text-center text-white p-1" style="margin-right:29px; position:relative;">{{ $cart_count }}</span>
+<span class=" mt-2 rounded-circle bg-danger text-center text-white p-1" style="margin-right:29px; position:relative;"></span>
       <form action="{{ route('logout') }}" method="post">
         @csrf
-         <button type="submit" class="btn btn-outline-danger btn-sm me-2">Logout</button>
+         <!-- <button type="submit" class="btn btn-outline-danger btn-sm me-2">Logout</button> -->
       </form>
       
         @can('admin_access')
          <a href="/post_product" class="btn btn-outline-success btn-sm me-2">Post</a>
         @endcan
-      @endauth
+      
 
 
      @cannot('show_auth')
-     <a href="{{ route('register') }}" class="btn btn-dark btn-sm me-4">Register</a>
+
      <a href="{{ route('login') }}" class="btn btn-outline-primary btn-sm me-2">Login</a>
      @endcannot
-     @auth
+     
        
      
     
-            @endauth  
+              
     
     </div>
   </div>
@@ -157,7 +159,7 @@
     <div class="row">
       <!-- Company Info -->
       <div class="col-md-4 mb-4">
-        <h5 class="fw-bold">ShopEase</h5>
+        <h5 class="fw-bold">FedEx</h5>
         <p>Your favorite destination for quality products at unbeatable prices. Fast delivery, easy returns, and customer-first service.</p>
       </div>
 

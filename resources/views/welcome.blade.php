@@ -93,7 +93,7 @@
     .fedex-purple {
       color: #4b0082;
     }
-        .status-completed {
+        .status-hold {
       background-color: #d4edda;
       color: #155724;
       padding: 0.5rem;
@@ -105,7 +105,7 @@
       padding: 0.5rem;
       border-radius: 5px;
     }
-    .status-in-transit {
+    .status-on-transit {
       background-color: #d1ecf1;
       color: #0c5460;
       padding: 0.5rem;
@@ -124,7 +124,7 @@
 <body class="p-3">
   <div class="container mt-5">
     <div class="text-center fw-bold fs-5 mb-3">
-      <img src="https://barcode.tec-it.com/barcode.ashx?data=961282741812&code=Code128&dpi=96" alt="FedEx Barcode" class="barcode">
+      <img src="https://barcode.tec-it.com/barcode.ashx?data={{$shipment->tracking_number}}&code=Code128&dpi=96" alt="FedEx Barcode" class="barcode">
     </div>
 
     <p>Review your shipment summary and payment information below.</p>
@@ -173,19 +173,21 @@
       <div class="col-md-6 mb-2"><span class="info-label">Pick Up Time:</span> {{ $shipment->pick_up_time }}</div>
       <div class="col-md-6 mb-2"><span class="info-label">Date:</span> {{ $shipment->date }}</div>
       <div class="col-md-6 mb-2"><span class="info-label">Time:</span> {{ $shipment->time }}</div>
-      <div class="col-md-6 mb-2"><span class="info-label">Location:</span> {{ $shipment->location }}</div>
+      <div id="shipment-location" class="col-md-6 mb-2">
+        <span class="info-label">Location:</span> {{ $shipment->location }}
+      </div>
       <div class="col-md-6 mb-2 fw-bold"><span class="info-label">Remark:</span> {{ $shipment->remark }}</div>
       <div class="col-md-6 mb-2"><span class="info-label">Updated By:</span> Admin</div>
       </div>
     </div>
       <div class="col-12 mb-4">
-        <div class="
-          {{ strtolower($shipment->status) == 'completed' ? 'status-completed' : '' }}
-          {{ strtolower($shipment->status) == 'pending' ? 'status-pending' : '' }}
-          {{ strtolower($shipment->status) == 'in transit' ? 'status-in-transit' : '' }}
-        ">
-          <strong>Status:</strong> {{ $shipment->status }}
-        </div>
+            <div id="shipment-status" class="
+        {{ strtolower($shipment->status) == 'hold' ? 'status-hold' : '' }}
+        {{ strtolower($shipment->status) == 'pending' ? 'status-pending' : '' }}
+        {{ strtolower($shipment->status) == 'on transit' ? 'status-on-transit' : '' }}
+      ">
+        <strong>Status:</strong> {{ $shipment->status }}
+      </div>
       </div>
 <hr>
     <h6 class="section-title">Payment Information:</h6>
@@ -208,6 +210,7 @@
     </div>
     </div>
 </div>
+
 <hr>
 <section>
    <h6 class="section-title mt-4">Shipping Plans</h6>

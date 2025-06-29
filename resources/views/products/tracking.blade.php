@@ -17,6 +17,7 @@
       background-color: #4d148c;
       color: white;
     }
+   
     .quick-action i {
       font-size: 1.5rem;
       color: #4d148c;
@@ -64,6 +65,47 @@
         height: 200px;
         object-fit: cover;
     }
+      body, html {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    .background {
+      background-image: url('{{asset('testing/images/images.jpeg')}}');
+      background-size: cover;
+      background-position: center;
+      height: 50vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+    }
+    .button-box {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-lg-square {
+      width: 150px;
+      height: 100px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border: none;
+      color: white;
+    }
+    .btn-transit { background-color: #dc3545; } /* red */
+    .btn-track { background-color: #198754; }   /* green */
+    .btn-ship { background-color: #0d6efd; }    /* blue */
+    .tracking-form input {
+      max-width: 300px;
+      padding: 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
@@ -109,48 +151,21 @@
     </div>
   </nav>
 
-  <!-- Quick Actions + Tracking -->
-  <section class="container my-4">
-    <div class="bg-light p-4 rounded shadow-sm">
-        <div class="row gy-4 align-items-center">
-            <div class="col-lg-7">
-                <div class="row text-center">
-                    <div class="col-6 col-md-3">
-                        <div class="quick-action">
-                            <i class="fas fa-calculator"></i>
-                            <div>Get a Quote</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="quick-action">
-                            <i class="fas fa-shipping-fast"></i>
-                            <div>Ship now</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="quick-action">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <div>Find Locations</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="quick-action">
-                            <i class="fas fa-headset"></i>
-                            <div>Contact support</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-5">
-                <form action="{{route('track')}}" method="POST" class="d-flex gap-2">
-                    @csrf
-                    <input type="text" class="form-control" name="tracking_number" placeholder="Tracking number" />
-                    <button type="submit" class="btn btn-orange text-nowrap">TRACK</button>
-                </form>
-            </div>
-        </div>
+  <div class="background">
+    <h2 class="text-dark mb-4 fw-bold">Welcome to FedEx Global Movers</h2>
+
+    <div class="button-box">
+      <button class="btn btn-lg-square btn-transit">GET<br>TRANSIT<br>TIME</button>
+      <button class="btn btn-lg-square btn-track">TRACK</button>
+      <button class="btn btn-lg-square btn-ship">SHIP</button>
     </div>
-  </section>
+
+    <form action="{{route('track')}}" method="POST" class="tracking-form d-flex justify-content-center">
+      @csrf
+    <input type="text" name="tracking_number"  class="form-control" placeholder="Tracking ID">
+      <button type="submit" class="btn btn-orange">Track</button>
+    </form>
+  </div>
 
   <!-- Hero Section -->
   <section class="container my-5">
