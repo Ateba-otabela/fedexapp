@@ -23,18 +23,31 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $request->authenticate();
+        // $request->authenticate();
 
-        $request->session()->regenerate();
-        $user = User::where('user_type', 1)->first();
+        // $request->session()->regenerate();
+        // $user = User::where('user_type', 1)->first();
       
-        if (!$user)
-           return redirect()->intended(route('product', absolute: false))->with('success', 'Welcome'.' '. Auth::user()->name. ' '.'You\'r logged in');
-        else{
-            return redirect()->intended(route('admin', absolute: false))->with('success', 'Welcome'.' '. Auth::user()->name. ' '.'You\'r logged in');
+        // if (!$user)
+        //    return redirect()->intended(route('product', absolute: false))->with('success', 'Welcome'.' '. Auth::user()->name. ' '.'You\'r logged in');
+        // else{
+        //     return redirect()->intended(route('admin', absolute: false))->with('success', 'Welcome'.' '. Auth::user()->name. ' '.'You\'r logged in');
+        // }
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            // Authentication passed
+             return redirect()->intended(route('product', absolute: false))->with('success', 'Welcome'.' '. Auth::user()->name. ' '.'You\'r logged in');
         }
+
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ]);
     }
 
     /**

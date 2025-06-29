@@ -123,7 +123,7 @@ class shoppingController extends Controller
         $user_id = Auth::id();
         $cartItem = cart::where('user_id', $user_id)->delete();
        
-        return redirect()->back()->with('success', 'Cart cleared Successfully!');
+        return redirect('/')->with('success', 'Cart cleared Successfully!');
   
 
    }
