@@ -145,7 +145,7 @@ class shoppingController extends Controller
         }
 
         $order = Order::create([
-           
+            'user_id' => $id,
             'payment_date' => now(),
             'product' => $product->title,
             'quantity' => $product->quantity,
@@ -155,7 +155,7 @@ class shoppingController extends Controller
         
 
         $user = Auth::user();
-        Mail::to($user->email)->send(new OrderConfirmationMail($user));
+       Mail::to($user->email)->send(new OrderConfirmationMail($user));
  
        return redirect()->back()->with('orderPlaced', 'Order placed successfully.');
     }
