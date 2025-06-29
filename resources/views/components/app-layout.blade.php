@@ -64,10 +64,17 @@
     <div class="collapse navbar-collapse" id="mainNavbar">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
+        @auth
+           @can('admin_access')
+              <li class="nav-item"><a class="nav-link" href="/admin">dashboard</a></li>
+            @endcan
+         <li class="nav-item"><a class="nav-link" href="/order">Orders</a></li>
+        @else
+
+        @endauth
         
-         <li class="nav-item"><a class="nav-link" href="/admin">dashboard</a></li>
         
-        <li class="nav-item"><a class="nav-link" href="/order">Orders</a></li>
+        
         <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
         <li class="nav-item"><a class="nav-link" href="/tracking">Tracking</a></li>
         <li class="nav-item"><a class="nav-link" href="/FAQ">FAQ</a></li>
@@ -78,7 +85,7 @@
     //           $id = Auth::user()->id;
    
     // $cart_count = cart::where('user_id',$id)->count();
-    //     ?>
+         ?>
       <!-- Search bar -->
       <form action="{{ route('search') }}" method="post" class="d-flex me-3" role="search">
         @csrf
@@ -97,14 +104,19 @@
        
         
       
-      <a href="/cart" class="btn btn-outline-dark btn-sm me-2">
+ @auth
+        <a href="/cart" class="btn btn-outline-dark btn-sm me-2">
         <i class="bi bi-cart"></i> Cart
         
       </a>
-<span class=" mt-2 rounded-circle bg-danger text-center text-white p-1" style="margin-right:29px; position:relative;"></span>
+      <span class=" mt-2 rounded-circle bg-danger text-center text-white p-1" style="margin-right:29px; position:relative;">4</span>
+ @endauth
+
       <form action="{{ route('logout') }}" method="post">
         @csrf
-         <!-- <button type="submit" class="btn btn-outline-danger btn-sm me-2">Logout</button> -->
+         @auth
+           <button type="submit" class="btn btn-outline-danger btn-sm me-2">Logout</button>
+         @endauth
       </form>
       
         @can('admin_access')
